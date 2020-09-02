@@ -44,7 +44,8 @@ export default {
                 return _color;
         },
         addData: async function(){
-                let state_resp = await fetch('http://dev.censushardtocountmaps2020.us/api/rtr/states');
+               // let state_resp = await fetch('censushardtocountmaps2020.us/api/rtr/states');
+               let state_resp = await fetch('./state_rates.json');
                 let _data = await state_resp.json();
 
                 let state_centroid_resp = await fetch('us-state-centroids.json');
