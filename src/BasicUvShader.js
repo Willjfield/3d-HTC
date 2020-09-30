@@ -25,7 +25,7 @@ export default new THREE.ShaderMaterial( {
 
     void main(void)
     {
-        gl_FragColor = vec4(vec2(mod(vUv+sin(iGlobalTime),.1))*10.,0., 1.);
+        gl_FragColor = vec4(vec2(mod(vUv+sin(iGlobalTime),.1))*10.,0., .5);
     }
     `
 

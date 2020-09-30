@@ -5,7 +5,9 @@
 import mapboxgl from 'mapbox-gl';
 import JsonLayer from '../JsonLayer';
 import BasicUvShader from '../BasicUvShader';
+import CityShader from '../CityShader';
 import * as THREE from 'three';
+
 //import tp from 'tesspathy';
 
 export default {
@@ -17,28 +19,42 @@ export default {
     },
     mounted: function(){
 
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY3VueWN1ciIsImEiOiJfQmNSMF9NIn0.uRgbcFeJbw2xyTUZY8gYeA';
+        mapboxgl.accessToken = 'pk.eyJ1Ijoid2ZpZWxkLWN1bnkiLCJhIjoiY2p6YTJnN2lzMDB1aDNicm9qbzN6d2F5dCJ9.eOQlPpQf5uyOJANVWurDDA';
         this.map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/light-v10',
+            style: 'mapbox://styles/wfield-cuny/ckffjh8d9037a19qj16geqf27',
             center: [-90,38],
             zoom: 3,
             pitch: 0,
             antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
         });
-        let self = this;
 
+        let self = this;
         
         this.createJsonLayer()
 
     },
     methods:{
         async createJsonLayer(){
-            let outline = await fetch('../us-cont.json');
+            let outline = await fetch('../us.json');
            
             let _data = await outline.json();
-            let coords = _data.features[0].geometry.coordinates.flat(1);
-            coords = coords.flat(Infinity);
+            
+            let cities = await fetch('../usa-state-capitals.geojson');
+            let cityData = await cities.json();
+
+            let cityCoords = cityData.features.map((g)=> {
+
+                let latlng = new mapboxgl.MercatorCoordinate.fromLngLat({
+                    lng: g.geometry.coordinates[0],
+                    lat: g.geometry.coordinates[1]
+                });
+                
+                return new THREE.Vector2(
+                    latlng.x,
+                    latlng.y
+                )
+            });
 
             const directionalLight = new THREE.SpotLight(0xffffff, 1,10,.3,1);
             directionalLight.position.set(1,1, -1);
@@ -50,15 +66,18 @@ export default {
             let _jsonLayer = new JsonLayer({
                 id:'continental-json', 
                 map: map, 
-                coords: coords,
-                camera: camera
+                camera: camera,
+                json: _data
             });
 
-             var shaderMaterial = BasicUvShader;
-
+             var shaderMaterial = CityShader;
+            
             _jsonLayer.material = shaderMaterial;
+
+            shaderMaterial.uniforms.cities.value = cityCoords;
+
             _jsonLayer.onRender = function(_matrix){
-                shaderMaterial.uniforms.iGlobalTime.value += .001;
+                shaderMaterial.uniforms.iGlobalTime.value += .08;
             }
 
             _jsonLayer.scene.add(directionalLight);
