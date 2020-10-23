@@ -20,12 +20,12 @@ export default new THREE.ShaderMaterial( {
     `,
 
     fragmentShader: `
-    uniform float iGlobalTime;
+    uniform vec3 color;
     varying vec2 vUv;
 
     void main(void)
     {
-        gl_FragColor = vec4(vec2(mod(vUv+sin(iGlobalTime),.1))*10.,0., .5);
+        gl_FragColor = vec4(color, .1);
     }
     `
 

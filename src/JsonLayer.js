@@ -37,6 +37,8 @@ export default class JsonLayer {
 
         this.id = args.id || 'jsonlayer';
 
+        this.zOffset = args.zOffset || 0;
+
         this.boundingBox = args.boundingBox;
 
         //Default ThreeJS material, scene, and camera if you don't pass one in
@@ -124,7 +126,7 @@ export default class JsonLayer {
         //Based on Tesspathy example http://gree.github.io/tesspathy/demos/drawing_pad/
         let shapes =  [];
         let labels = [];
-        
+
         //go through each shape
         for(let i = 0; i<coords.length;i++){
             //First point needs to be labeled as a starting point
@@ -141,6 +143,7 @@ export default class JsonLayer {
                         [mercCoords.x,
                         mercCoords.y]
                     );
+                    
                 }
             }
             //Each of these points should be labeled an anchor
@@ -150,14 +153,18 @@ export default class JsonLayer {
 
         }
 
-        //Use Tesspathy to tesselate the shape
-        let mTriangleRecords = tp.triangulate(shapes, labels);
+        //Use Tesspathy to tesselate the shape and get UVs
+        //let mTriangleRecords = tp.triangulate(shapes, labels);
         
+        //shapes.map((s)=>s.push(this.zOffset));
+        
+
         //Make an object for each vertex with the location and index
-        let verts = {
-            points: Float32Array.from( mTriangleRecords.triangleLocations),
-            index: mTriangleRecords.triangleIndices
-        }
+        // let verts = {
+        //     points: Float32Array.from(shapes.flat(Infinity)),
+        //     uvs: Float32Array.from( mTriangleRecords.triangleLocations),
+        //     index: mTriangleRecords.triangleIndices
+        // }
        
         //Create a new THREE.BufferGeometry
         let _geometry = new THREE.BufferGeometry();
@@ -170,7 +177,7 @@ export default class JsonLayer {
         //Set the uv coordinate to the point location (This only works because it's a flat surface with 0-1 coordinates!)
         _geometry.setAttribute(
             'uv',
-            new THREE.BufferAttribute(verts.points, 2));
+            new THREE.BufferAttribute(verts.uvs, 2));
 
         //Set the order to draw the vertices in
         _geometry.setIndex(verts.index);

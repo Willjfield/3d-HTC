@@ -36,9 +36,15 @@ export default {
     },
     methods:{
         async createJsonLayer(){
-            let outline = await fetch('../us.json');
+            let outline114 = await fetch('../NJ_7_114.geojson');
            
-            let _data = await outline.json();
+            let _data114= await outline114.json();
+            console.log(_data114)
+            //let outline106 = await fetch('../NJ_7_106.geojson');
+           let outline106= await fetch('http://localhost:3000/data');
+            let _data106= await outline106.json();
+
+         //  console.log(_data106[0])
             
             let cities = await fetch('../usa-state-capitals.geojson');
             let cityData = await cities.json();
@@ -63,27 +69,43 @@ export default {
 
             let map = this.map;
 
-            let _jsonLayer = new JsonLayer({
-                id:'continental-json', 
+            let _jsonLayer114 = new JsonLayer({
+                id:'114-json', 
                 map: map, 
                 camera: camera,
-                json: _data
+                json: _data114,
+                zOffset: .0001
             });
 
-             var shaderMaterial = CityShader;
+             //var shaderMaterial = BasicUvShader;
             
-            _jsonLayer.material = shaderMaterial;
+            _jsonLayer114.material = new THREE.MeshBasicMaterial({
+                transparent: true, 
+                side: THREE.DoubleSide,
+                opacity:.5,
+                color:0xff9955,
+                depthWrite: false
+            });
 
-            shaderMaterial.uniforms.cities.value = cityCoords;
+            let _jsonLayer106 = new JsonLayer({
+                id:'106-json', 
+                map: map, 
+                camera: camera,
+                feature: _data106[0],
+                zOffset: .001,
+                depthWrite: false,
+                scene: _jsonLayer114.scene
+            });
 
-            _jsonLayer.onRender = function(_matrix){
-                shaderMaterial.uniforms.iGlobalTime.value += .08;
-            }
-
-            _jsonLayer.scene.add(directionalLight);
-
+             _jsonLayer106.material = new THREE.MeshBasicMaterial({
+                transparent: true, 
+                side: THREE.DoubleSide,
+                opacity:.5,
+                color:0x55ff99
+            });
             map.on('load', function () {
-                map.addLayer(_jsonLayer, 'waterway-label');
+               //map.addLayer(_jsonLayer114, 'waterway-label');
+                map.addLayer(_jsonLayer106, 'waterway-label');
             });
 
             map.on('webglcontextlost', function() {
